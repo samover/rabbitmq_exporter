@@ -16,9 +16,11 @@ type exporter struct {
 	overviewMetrics     map[string]prometheus.Gauge
 	upMetric            prometheus.Gauge
 	exchangeMetrics     map[string]*prometheus.Desc
+	nodeMetrics         map[string]*prometheus.Desc
 	overviewFetched     bool
 	queuesFetched       bool
 	exchangesFetched    bool
+	nodesFetched        bool
 }
 
 func newExporter() *exporter {
@@ -28,6 +30,7 @@ func newExporter() *exporter {
 		overviewMetrics:     overviewMetricDescription,
 		upMetric:            upMetricDescription,
 		exchangeMetrics:     exchangeCounterVec,
+		nodeMetrics:         nodeCounterVec,
 	}
 }
 
@@ -35,12 +38,14 @@ func (e *exporter) fetchRabbit(ch chan<- prometheus.Metric) {
 	rabbitMqOverviewData, overviewError := getMetricMap(config, "overview")
 	rabbitMqQueueData, queueError := getStatsInfo(config, "queues")
 	exchangeData, exchangeError := getStatsInfo(config, "exchanges")
+	nodeData, nodeError := getStatsInfo(config, "nodes")
 
 	e.overviewFetched = overviewError == nil
 	e.queuesFetched = queueError == nil
 	e.exchangesFetched = exchangeError == nil
+	e.nodesFetched = nodeError == nil
 
-	if overviewError != nil || queueError != nil || exchangeError != nil {
+	if overviewError != nil || queueError != nil || exchangeError != nil || nodeError != nil {
 		e.upMetric.Set(0)
 	} else {
 		e.upMetric.Set(1)
@@ -91,6 +96,15 @@ func (e *exporter) fetchRabbit(ch chan<- prometheus.Metric) {
 			if value, ok := exchange.metrics[key]; ok {
 				log.WithFields(log.Fields{"vhost": exchange.vhost, "exchange": exchange.name, "key": key, "value": value}).Debug("Set exchange metric for key")
 				ch <- prometheus.MustNewConstMetric(countvec, prometheus.CounterValue, value, exchange.vhost, exchange.name)
+			}
+		}
+	}
+
+	for key, countvec := range e.nodeMetrics {
+		for _, node := range nodeData {
+			if value, ok := node.metrics[key]; ok {
+				log.WithFields(log.Fields{"type": node.vhost, "node": node.name, "key": key, "value": value}).Debug("Set node metric for key")
+				ch <- prometheus.MustNewConstMetric(countvec, prometheus.CounterValue, value, node.vhost, node.name)
 			}
 		}
 	}
