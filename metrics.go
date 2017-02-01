@@ -21,6 +21,10 @@ var (
 		"object_totals.exchanges":   newGauge("exchangesTotal", "Total number of exchanges in use."),
 	}
 
+    nodeGaugeVec = map[string]*prometheus.GaugeVec{
+        "running":                      newGaugeVec("running", "test", nodeLabels),
+    }
+
 	queueGaugeVec = map[string]*prometheus.GaugeVec{
 		"messages_ready":               newGaugeVec("queue_messages_ready", "Number of messages ready to be delivered to clients.", queueLabels),
 		"messages_unacknowledged":      newGaugeVec("queue_messages_unacknowledged", "Number of messages delivered to clients but not yet acknowledged.", queueLabels),
@@ -63,7 +67,6 @@ var (
 		"fd_limit":                    newDesc("fd_limit", "File descriptors available", nodeLabels),
 		"socket_used":                 newDesc("socket_used", "File descriptors used as sockets.", nodeLabels),
 		"socket_limit":                newDesc("socket_limit", "File descriptors available for use as sockets", nodeLabels),
-        "running":                     newDesc("running", "test", nodeLabels),
 	}
 
 	exchangeCounterVec = map[string]*prometheus.Desc{

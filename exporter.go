@@ -16,7 +16,8 @@ type exporter struct {
 	overviewMetrics     map[string]prometheus.Gauge
 	upMetric            prometheus.Gauge
 	exchangeMetrics     map[string]*prometheus.Desc
-	nodeMetrics         map[string]*prometheus.Desc
+	nodeMetricsCounter  map[string]*prometheus.Desc
+	nodeMetricsGauge    map[string]*prometheus.GaugeVec
 	overviewFetched     bool
 	queuesFetched       bool
 	exchangesFetched    bool
@@ -30,7 +31,8 @@ func newExporter() *exporter {
 		overviewMetrics:     overviewMetricDescription,
 		upMetric:            upMetricDescription,
 		exchangeMetrics:     exchangeCounterVec,
-		nodeMetrics:         nodeCounterVec,
+		nodeMetricsCounter:  nodeCounterVec,
+        nodeMetricsGauge:   nodeGaugeVec,
 	}
 }
 
@@ -75,6 +77,18 @@ func (e *exporter) fetchRabbit(ch chan<- prometheus.Metric) {
 			}
 		}
 	}
+
+	for key, gaugevec := range e.nodeMetricsGauge {
+		for _, node := range e.nodeData {
+			if value, ok := node.metrics[key]; ok {
+						log.WithFields(log.Fields{"vhost": node.vhost, "queue": node.name, "key": key, "value": value}).Debug("Set queue metric for key")
+						gaugevec.WithLabelValues(node.vhost, node.name).Set(value)
+					}
+				}
+			}
+		}
+	}
+
 	for key, countvec := range e.queueMetricsCounter {
 		for _, queue := range rabbitMqQueueData {
 			if match_include, _ := regexp.MatchString(config.IncludeQueues, strings.ToLower(queue.name)); match_include {
@@ -100,7 +114,7 @@ func (e *exporter) fetchRabbit(ch chan<- prometheus.Metric) {
 		}
 	}
 
-	for key, countvec := range e.nodeMetrics {
+	for key, countvec := range e.nodeMetricsCounter {
 		for _, node := range nodeData {
 			if value, ok := node.metrics[key]; ok {
 				log.WithFields(log.Fields{"type": node.vhost, "node": node.name, "key": key, "value": value}).Debug("Set node metric for key")
