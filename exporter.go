@@ -78,10 +78,12 @@ func (e *exporter) fetchRabbit(ch chan<- prometheus.Metric) {
 		}
 	}
 
+    log.Info("Doing stuff")
+    log.Info(e.nodeMetricsGauge)
 	for key, gaugevec := range e.nodeMetricsGauge {
+        log.Info(key)
 		for _, node := range e.nodeData {
 			if value, ok := node.metrics[key]; ok {
-                log.Info(key)
                 log.Info(node.metrics[key]
 				log.WithFields(log.Fields{"vhost": node.vhost, "queue": node.name, "key": key, "value": value}).Debug("Set queue metric for key")
 				gaugevec.WithLabelValues(node.vhost, node.name).Set(value)
