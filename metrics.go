@@ -63,6 +63,7 @@ var (
 		"fd_limit":                    newDesc("fd_limit", "File descriptors available", nodeLabels),
 		"socket_used":                 newDesc("socket_used", "File descriptors used as sockets.", nodeLabels),
 		"socket_limit":                newDesc("socket_limit", "File descriptors available for use as sockets", nodeLabels),
+        "running":                     newDesc("running", "test", nodeLabels),
 	}
 
 	exchangeCounterVec = map[string]*prometheus.Desc{
