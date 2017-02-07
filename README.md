@@ -112,6 +112,24 @@ metric | description
 |exchange_messages_ack_total|Count of messages delivered in acknowledgement mode in response to basic.get.|
 |exchange_messages_redelivered_total|Count of subset of messages in deliver_get which had the redelivered flag set.|
 |exchange_messages_returned_total|Count of messages returned to publisher as unroutable.|
+
+#### Nodes - Counter
+
+Labels: vhost, node
+
+metric | description
+-------| ------------
+|node_running|Run status of the node.|
+|node_mem_used|Memory used in bytes.|
+|node_mem_limit|Point at which the memory alarm will go off.|
+|node_mem_alarm|Whether the memory alarm has gone off.|
+|node_disk_free|Disk free space in bytes.|
+|node_disk_free_alarm|Whether the disk alarm has gone off.|
+|node_disk_free_limit|Point at which the disk alarm will go off.|
+|node_fd_used|Used File descriptors.|
+|node_fd_limit|File descriptors available.|
+|node_socket_used|File descriptors used as sockets.|
+|node_socket_limit|File descriptors available for use as sockets.|
 	
 ## Docker
 
